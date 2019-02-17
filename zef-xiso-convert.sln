@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.329
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "zef-xiso-convert", "zef-xiso-convert\zef-xiso-convert.csproj", "{8B62745C-DC70-4C16-8DD5-D89FBA801ABF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8B62745C-DC70-4C16-8DD5-D89FBA801ABF}.Debug|x86.ActiveCfg = Debug|x86
+		{8B62745C-DC70-4C16-8DD5-D89FBA801ABF}.Debug|x86.Build.0 = Debug|x86
+		{8B62745C-DC70-4C16-8DD5-D89FBA801ABF}.Release|x86.ActiveCfg = Release|x86
+		{8B62745C-DC70-4C16-8DD5-D89FBA801ABF}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3D4B9588-EA81-4C14-8C96-A2E0FBB2E3BA}
+	EndGlobalSection
+EndGlobal
