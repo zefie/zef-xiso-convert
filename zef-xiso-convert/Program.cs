@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.IO;
-using System.Threading.Tasks;
+using System.Reflection;
 using System.ComponentModel;
 using XBoxISO;
 
@@ -13,8 +12,12 @@ namespace ZefXISOConvert
     {
         static void Main(string[] args)
         {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+
+            
+            Console.WriteLine(assembly.FullName.Split(',')[0] + " v" + assembly.FullName.Split('=')[1].Split(',')[0].TrimEnd('0','.'));
 #if DEBUG
-            string file = "E:\\zefie\\Downloads\\out\\Myst IV - Revelation (USA).iso";
+            string file = "E:\\zefie\\Downloads\\out\\Teen Titans (USA).iso";
 #else
             if (args.Length < 1)
             {
@@ -90,19 +93,24 @@ namespace ZefXISOConvert
             XBoxISO.CrossLinkChecker clc = new CrossLinkChecker();
             CopyStatus cs = new CopyStatus();
 
+            xfsm.Normalise(xfs);
+
+            ISOPartitionDetails isop = xisosrc.GetPartitionDetails();
+
+            bool result = false;
+            if ((long)isop.GamePartitionSize > XBoxDVDReader.DVD5MaxSize) {
+                result = xfsm.OptimiseDVD9(xfs, false, true, true, isop);
+            } else {
+                result = xfsm.OptimiseDVD5(xfs, false, false, true, true, false, 0, false, isop); 
+            }            
+
             BackgroundWorker clc_bw = new BackgroundWorker();
             clc_bw.WorkerReportsProgress = true;
             clc_bw.WorkerSupportsCancellation = true;
             clc_bw.ProgressChanged += clc_bw_ProgressChanged;
             clc.CrossLinkCheck(xfs, cs, clc_bw);
             Console.Write("\n");
-            ISOPartitionDetails isop = xisosrc.GetPartitionDetails();
 
-            if ((long)isop.GamePartitionSize > XBoxDVDReader.DVD5MaxSize) {
-                xfsm.OptimiseDVD9(xfs, false, true, true, isop);
-            } else {
-                xfsm.OptimiseDVD5(xfs, false, false, true, true, false, 0, false, isop); 
-            }
             BackgroundWorker main_bw = new BackgroundWorker();
             main_bw.WorkerReportsProgress = true;
             main_bw.WorkerSupportsCancellation = true;
@@ -111,18 +119,41 @@ namespace ZefXISOConvert
             Console.Write("\n");
         }
 
+        public static void ProgressUpdate(string str1, string str2)
+        {
+            Console.Write(string.Format("\r{0}", "".PadLeft(Console.CursorLeft, ' ')));
+            Console.Write("\r{0}", str1);
+            Console.CursorLeft = Console.BufferWidth - (str2.Length + 1);
+            Console.Write(str2);
+            Console.CursorLeft = 0;
+        }
+
+        public static void ProgressUpdate(string str1, string str2, string str3)
+        {            
+            Console.Write(string.Format("\r{0}", "".PadLeft(Console.CursorLeft, ' ')));
+            Console.Write("\r{0}",str1);
+            Console.CursorLeft = Console.BufferWidth - (str3.Length + str2.Length + 9);
+            Console.Write(str2);
+            Console.CursorLeft = Console.BufferWidth - (str3.Length + 1);
+            Console.Write(str3);
+            Console.CursorLeft = 0;
+        }
+
         private static void clc_bw_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             CopyStatus cp = (CopyStatus)e.UserState;
             ClearCurrentConsoleLine();
-            Console.Write(cp.FileName + " (" + friendlyBytes(cp.BytesThisFile) + "/" + friendlyBytes(cp.SizeThisFile) + ") ~ Total: " + friendlyBytes(cp.TotalBytesWritten) + "/" + friendlyBytes(cp.TotalSizeToWrite) + " " + e.ProgressPercentage.ToString() + "%\r");
+            String leftstr = friendlyBytes(cp.BytesThisFile) + "/" + friendlyBytes(cp.SizeThisFile);
+            ProgressUpdate(cp.FileName, leftstr);
         }
 
         private static void main_bw_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             CopyStatus cp = (CopyStatus)e.UserState;
             ClearCurrentConsoleLine();
-            Console.Write("Writing "+cp.FileName+" ("+friendlyBytes(cp.BytesThisFile)+"/"+ friendlyBytes(cp.SizeThisFile)+ ") ~ Total: " + friendlyBytes(cp.TotalBytesWritten) + "/" + friendlyBytes(cp.TotalSizeToWrite) + " " + e.ProgressPercentage.ToString() + "%\r");
+            String leftstr = friendlyBytes(cp.BytesThisFile) + "/" + friendlyBytes(cp.SizeThisFile);
+            String rightstr = "Total: " + friendlyBytes(cp.TotalBytesWritten) + "/" + friendlyBytes(cp.TotalSizeToWrite) + " " + e.ProgressPercentage.ToString() + "%";
+            ProgressUpdate("Writing " + cp.FileName,leftstr,rightstr);
         }
 
         // Unused but functional function
