@@ -12,27 +12,38 @@ namespace ZefXISOConvert
     {
         static void Main(string[] args)
         {
+            // print version info and attribution
             Assembly assembly = Assembly.GetExecutingAssembly();
-            // print identifier line
-
             Console.WriteLine(assembly.FullName.Split(',')[0] + " v" + assembly.FullName.Split('=')[1].Split(',')[0].TrimEnd('0','.') + " by zefie ~ XISO functionality via XDVDMulleter libraries by Badsheepy");
+
+             
 #if DEBUG
             string file = "E:\\zefie\\Downloads\\out\\Teen Titans (USA).iso";
+            string outfile = "E:\\zefie\\Downloads\\out\\test.iso";
 #else
+            string outfile = "";
             if (args.Length < 1)
             {
                 Console.WriteLine("Usage: zefconvert [redump xboxog iso]");
                 return;
             }
             string file = args[0];
+            if (args.Length < 2) 
+            {
+                outfile = args[1];
+            }
 #endif
             if (File.Exists(file))
             {
-                List<string> tmp = file.Split('/').Last().Split('.').ToList();
-                tmp.RemoveAt(tmp.Count - 1);
-                string newfile = String.Join(".", tmp) + " [Redump Extract].iso";
+                if (outfile.Length == 0)
+                {
+                    // default name (infile [Redump Extract])
+                    List<string> tmp = file.Split('/').Last().Split('.').ToList();
+                    tmp.RemoveAt(tmp.Count - 1);
+                    outfile = String.Join(".", tmp) + " [Redump Extract].iso";
+                }
                 Console.WriteLine("Converting XGD Format to XISO Format...");
-                convertISO(file, newfile);
+                convertISO(file, outfile);
             } else
             {
                 Console.WriteLine("Could not find file: " + file);
