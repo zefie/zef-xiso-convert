@@ -45,13 +45,6 @@ namespace ZefXISOConvert
             else return (int)remain;
         }
 
-        public static void ClearCurrentConsoleLine()
-        {
-            int currentLineCursor = Console.CursorTop;
-            Console.SetCursorPosition(0, Console.CursorTop);
-            Console.Write(new string(' ', Console.WindowWidth));
-            Console.SetCursorPosition(0, currentLineCursor);
-        }
         static string friendlyBytes(long size, int round = 2)
         {
             List<string> sizes = new List<string>() { "B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
@@ -92,57 +85,55 @@ namespace ZefXISOConvert
             FSFileOptimiseComparer xiso_sort = new FSFileOptimiseComparer();
             XBoxISO.CrossLinkChecker clc = new CrossLinkChecker();
             CopyStatus cs = new CopyStatus();
-
-            xfsm.Normalise(xfs);
+            bool result = false;
 
             ISOPartitionDetails isop = xisosrc.GetPartitionDetails();
 
-            bool result = false;
+            Console.Write("Optimizing XISO Filesystem Layout...");
+            
             if ((long)isop.GamePartitionSize > XBoxDVDReader.DVD5MaxSize) {
                 result = xfsm.OptimiseDVD9(xfs, false, true, true, isop);
             } else {
                 result = xfsm.OptimiseDVD5(xfs, false, false, true, true, false, 0, false, isop); 
-            }            
+            }
+            if (result) Console.WriteLine(" Success.");
+            else Console.WriteLine(" Failed... but thats okay, continuing.");
 
+            Console.WriteLine("Checking for crosslinkable files...");
             BackgroundWorker clc_bw = new BackgroundWorker();
             clc_bw.WorkerReportsProgress = true;
             clc_bw.WorkerSupportsCancellation = true;
             clc_bw.ProgressChanged += clc_bw_ProgressChanged;
             clc.CrossLinkCheck(xfs, cs, clc_bw);
-            Console.Write("\n");
+            Console.WriteLine();
 
+            Console.WriteLine("Writing ISO to "+outfile+"...");
             BackgroundWorker main_bw = new BackgroundWorker();
             main_bw.WorkerReportsProgress = true;
             main_bw.WorkerSupportsCancellation = true;
             main_bw.ProgressChanged += main_bw_ProgressChanged;
             xiso.writeISO(outfile, xfs, main_bw, false);
-            Console.Write("\n");
+            Console.WriteLine();
+            Console.WriteLine("Done!");
         }
 
         public static void ProgressUpdate(string str1, string str2)
         {
-            Console.Write(string.Format("\r{0}", "".PadLeft(Console.CursorLeft, ' ')));
-            Console.Write("\r{0}", str1);
-            Console.CursorLeft = Console.BufferWidth - (str2.Length + 1);
-            Console.Write(str2);
+            int len = Console.BufferWidth - (str2.Length + 3);
             Console.CursorLeft = 0;
+            Console.Write("{0,-" + len + "} {1,0}", str1, str2);
         }
 
         public static void ProgressUpdate(string str1, string str2, string str3)
-        {            
-            Console.Write(string.Format("\r{0}", "".PadLeft(Console.CursorLeft, ' ')));
-            Console.Write("\r{0}",str1);
-            Console.CursorLeft = Console.BufferWidth - (str3.Length + str2.Length + 9);
-            Console.Write(str2);
-            Console.CursorLeft = Console.BufferWidth - (str3.Length + 1);
-            Console.Write(str3);
+        {
+            int len = Console.BufferWidth - (str2.Length + str3.Length + 5);
             Console.CursorLeft = 0;
+            Console.Write("{0,-" + len + "} {1,3}   {2,0}", str1, str2, str3);
         }
 
         private static void clc_bw_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             CopyStatus cp = (CopyStatus)e.UserState;
-            ClearCurrentConsoleLine();
             String leftstr = friendlyBytes(cp.BytesThisFile) + "/" + friendlyBytes(cp.SizeThisFile);
             ProgressUpdate(cp.FileName, leftstr);
         }
@@ -150,9 +141,8 @@ namespace ZefXISOConvert
         private static void main_bw_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             CopyStatus cp = (CopyStatus)e.UserState;
-            ClearCurrentConsoleLine();
             String leftstr = friendlyBytes(cp.BytesThisFile) + "/" + friendlyBytes(cp.SizeThisFile);
-            String rightstr = "Total: " + friendlyBytes(cp.TotalBytesWritten) + "/" + friendlyBytes(cp.TotalSizeToWrite) + " " + e.ProgressPercentage.ToString() + "%";
+            String rightstr = "Total: " + friendlyBytes(cp.TotalBytesWritten) + "/" + friendlyBytes(cp.TotalSizeToWrite);
             ProgressUpdate("Writing " + cp.FileName,leftstr,rightstr);
         }
 
