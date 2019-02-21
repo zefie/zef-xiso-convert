@@ -13,9 +13,9 @@ namespace ZefXISOConvert
         static void Main(string[] args)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
+            // print identifier line
 
-            
-            Console.WriteLine(assembly.FullName.Split(',')[0] + " v" + assembly.FullName.Split('=')[1].Split(',')[0].TrimEnd('0','.'));
+            Console.WriteLine(assembly.FullName.Split(',')[0] + " v" + assembly.FullName.Split('=')[1].Split(',')[0].TrimEnd('0','.') + " by zefie ~ XISO functionality via XDVDMulleter libraries by Badsheepy");
 #if DEBUG
             string file = "E:\\zefie\\Downloads\\out\\Teen Titans (USA).iso";
 #else
