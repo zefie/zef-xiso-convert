@@ -28,7 +28,7 @@ namespace ZefXISOConvert
                 return;
             }
             string file = args[0];
-            if (args.Length < 2) 
+            if (args.Length == 2) 
             {
                 outfile = args[1];
             }
